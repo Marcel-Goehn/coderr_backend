@@ -13,12 +13,14 @@ class RegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ["user_id", "username", "email", "password", "repeated_password", "type"]
         extra_kwargs = {
-            "password": { "write_only": True }
+            "password": { "write_only": True },
+            "email": { "required": True }
         }
         
     def validate_type(self, value):
-        if value is not "business" or value is not "customer":
+        if value != "business" and value != "customer":
             raise serializers.ValidationError("type field can only be 'business' or 'customer'.")
+        return value
             
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
