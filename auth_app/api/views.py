@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegistrationSerializer, LoginSerializer, ProfileSerializer
+from .serializers import RegistrationSerializer, LoginSerializer, ProfileSerializer, BusinessProfileSerializer, CustomerProfileSerializer
 from auth_app.models import UserProfile
 from .permissions import IsProfileOwner
 
@@ -50,3 +50,17 @@ class ProfileRetrievePatchView(generics.RetrieveUpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = ProfileSerializer
     permission_classes = [IsProfileOwner]
+    
+    
+class ProfileListView(generics.ListAPIView):
+    def get_queryset(self):
+        if "business" in self.request.get_full_path():
+            return UserProfile.objects.filter(type="business")
+        if "customer" in self.request.get_full_path():
+            return UserProfile.objects.filter(type="customer")
+        
+    def get_serializer_class(self):
+        if "business" in self.request.get_full_path():
+            return BusinessProfileSerializer
+        if "customer" in self.request.get_full_path():
+            return CustomerProfileSerializer
