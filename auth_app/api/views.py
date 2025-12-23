@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import RegistrationSerializer, LoginSerializer, ProfileSerializer
 from auth_app.models import UserProfile
+from .permissions import IsProfileOwner
 
 
 class RegistrationView(APIView):
@@ -48,3 +49,4 @@ class LoginView(APIView):
 class ProfileRetrievePatchView(generics.RetrieveUpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = ProfileSerializer
+    permission_classes = [IsProfileOwner]
