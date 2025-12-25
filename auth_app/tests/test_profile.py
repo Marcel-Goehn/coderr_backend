@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 from rest_framework import status
 from auth_app.models import UserProfile
-from auth_app.api.serializers import ProfileSerializer
+from auth_app.api.serializers import ProfileSerializer, BusinessProfileSerializer, CustomerProfileSerializer
 
 
 class ProfileTests(APITestCase):
@@ -120,3 +120,37 @@ class ProfileTests(APITestCase):
         }
         response = self.client.patch(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_business_profiles(self):
+        self.user_two = User.objects.create_user(username="testusertwo", password="testpassword123", email="testmailtwo@mail.com")
+        self.profile = UserProfile.objects.create(user=self.user_two, type="customer")
+        self.client.force_authenticate(user=self.user)
+        all_business_profiles = UserProfile.objects.filter(type="business")
+        url = reverse("business-profile-list")
+        response = self.client.get(url)
+        expected_data = BusinessProfileSerializer(all_business_profiles, many=True).data
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(expected_data, response.data)
+        self.assertNotContains(response, "customer")
+
+    def test_get_business_profiles_not_authenticated(self):
+        url = reverse("business-profile-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_customer_profiles(self):
+        self.user_two = User.objects.create_user(username="testusertwo", password="testpassword123", email="testmailtwo@mail.com")
+        self.profile = UserProfile.objects.create(user=self.user_two, type="customer")
+        self.client.force_authenticate(user=self.user)
+        all_business_profiles = UserProfile.objects.filter(type="customer")
+        url = reverse("customer-profile-list")
+        response = self.client.get(url)
+        expected_data = CustomerProfileSerializer(all_business_profiles, many=True).data
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(expected_data, response.data)
+        self.assertNotContains(response, "business")
+
+    def test_get_customer_profiles_not_authenticated(self):
+        url = reverse("customer-profile-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
