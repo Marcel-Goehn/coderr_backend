@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 from rest_framework import status
 from auth_app.models import UserProfile
+from freelance_app.models import Offer
+from freelance_app.api.serializers import OfferGetListSerializer
 
 
 class OfferTests(APITestCase):
@@ -189,5 +191,14 @@ class OfferTests(APITestCase):
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_offer_list_successful(self):
+        self.client.force_authenticate(user=self.user)
+        all_offers = Offer.objects.all()
+        url = reverse("offer-list")
+        response = self.client.get(url)
+        expected_data = OfferGetListSerializer(all_offers, many=True).data
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(expected_data, response.data)
 
         
