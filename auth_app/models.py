@@ -12,10 +12,13 @@ class UserProfile(models.Model):
     ]
     
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    file = models.FileField(upload_to="uploads/", blank=True)
+    file = models.FileField(upload_to="profiles/", blank=True)
     location = models.CharField(max_length=20, blank=True)
     tel = models.CharField(max_length=20, blank=True)
     description = models.CharField(max_length=100, blank=True)
     working_hours = models.CharField(max_length=10, blank=True)
     type = models.CharField(max_length=10, choices=user_choices)
+
+    def __str__(self):
+        return f"{self.user.username}"
     
