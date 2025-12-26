@@ -26,15 +26,8 @@ class OfferDetail(models.Model):
     revisions = models.IntegerField()
     delivery_time_in_days = models.IntegerField()
     price = models.FloatField()
+    features = models.JSONField(default=list)
     offer_type = models.CharField(max_length=10, choices=offer_choices)
 
     def __str__(self):
         return f"{self.title}"
-    
-
-class OfferDetailFeature(models.Model):
-    offer_detail = models.ForeignKey(OfferDetail, on_delete=models.CASCADE, related_name="features")
-    feature = models.CharField(max_length=50)
-
-    def __str__(self):
-        return f"{self.feature}"
