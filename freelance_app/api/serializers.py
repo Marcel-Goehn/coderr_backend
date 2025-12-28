@@ -49,10 +49,17 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 
 class OfferDetailHyperLinkedSerializer(serializers.HyperlinkedModelSerializer):
+
     class Meta:
         model = OfferDetail
         fields = ["id", "url"]
-        read_only_fields = ["id", "url"]
+        extra_kwargs = {
+            "url": {
+                "view_name": "offerdetail",
+                "lookup_field": "pk",
+                "read_only": True
+            }
+        }
 
 
 class OfferGetListSerializer(serializers.ModelSerializer):

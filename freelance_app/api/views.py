@@ -1,8 +1,8 @@
 from rest_framework import viewsets
+from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .serializers import (OfferPostSerializer, OfferGetListSerializer,
-                          OfferDetailHyperLinkedSerializer, OfferRetrieveSerializer,
-                          OfferPatchSerializer)
+from .serializers import (OfferPostSerializer, OfferGetListSerializer, OfferRetrieveSerializer,
+                          OfferPatchSerializer, OfferDetailSerializer)
 from .permissions import IsBusinessUser
 from freelance_app.models import Offer, OfferDetail
 from rest_framework import filters
@@ -80,6 +80,6 @@ class OfferModelViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-class OfferDetailModelViewSet(viewsets.ModelViewSet):
+class OfferDetailRetrieveView(generics.RetrieveAPIView):
     queryset = OfferDetail.objects.all()
-    serializer_class = OfferDetailHyperLinkedSerializer
+    serializer_class = OfferDetailSerializer
