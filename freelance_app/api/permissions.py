@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 
-class IsBusinessUser(permissions.BasePermission):
+class CustomOfferPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
@@ -27,3 +27,10 @@ class IsBusinessUser(permissions.BasePermission):
         
         if request.method == "DELETE":
             return request.user == obj.user
+        
+
+class CustomOrderPermissions(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == "POST":
+            return request.user.profile.type == "customer"
+        return False

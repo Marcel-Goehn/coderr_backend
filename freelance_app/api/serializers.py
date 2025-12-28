@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from freelance_app.models import Offer, OfferDetail
+from freelance_app.models import Offer, OfferDetail, Order
 
 
 class OfferDetailSerializer(serializers.ModelSerializer):
@@ -128,3 +128,35 @@ class OfferPatchSerializer(serializers.ModelSerializer):
         instance.description = validated_data.get("description", instance.description)
         instance.save()
         return instance
+    
+
+class OrderPostSerializer(serializers.ModelSerializer):
+
+    offer_choices = [
+        ("basic", "basic"),
+        ("standard", "standard"),
+        ("premium", "premium")
+    ]
+
+    offer_detail_id = serializers.PrimaryKeyRelatedField(
+        queryset=OfferDetail.objects.all(),
+        write_only=True,
+        source="offer_detail"
+    )
+    business_user = serializers.IntegerField(source="offer_detail.offer.user.id", read_only=True)
+    title = serializers.CharField(source="offer_detail.title", max_length=50, read_only=True)
+    revisions = serializers.IntegerField(source="offer_detail.revisions", read_only=True)
+    delivery_time_in_days = serializers.IntegerField(source="offer_detail.delivery_time_in_days", read_only=True)
+    price = serializers.FloatField(source="offer_detail.price", read_only=True)
+    features = serializers.JSONField(source="offer_detail.features", read_only=True)
+    offer_type = serializers.ChoiceField(choices=offer_choices, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ["id", "offer_detail_id", "customer_user", "business_user", 
+                  "title", "revisions", "delivery_time_in_days", "price", "features", 
+                  "offer_type", "status", "created_at"]
+        read_only_fields = ["id", "status", "created_at"]
+        extra_kwargs = {
+            "customer_user": {"required": False}
+        }

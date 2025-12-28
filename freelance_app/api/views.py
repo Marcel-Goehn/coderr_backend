@@ -2,9 +2,9 @@ from rest_framework import viewsets
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import (OfferPostSerializer, OfferGetListSerializer, OfferRetrieveSerializer,
-                          OfferPatchSerializer, OfferDetailSerializer)
-from .permissions import IsBusinessUser
-from freelance_app.models import Offer, OfferDetail
+                          OfferPatchSerializer, OfferDetailSerializer, OrderPostSerializer)
+from .permissions import CustomOfferPermissions, CustomOrderPermissions
+from freelance_app.models import Offer, OfferDetail, Order
 from rest_framework import filters
 from .paginations import OfferListPagination
 from django.db.models import Min
@@ -68,13 +68,13 @@ class OfferModelViewSet(viewsets.ModelViewSet):
         if self.action == "list":
             return [AllowAny()]
         if self.action == "create":
-            return [IsAuthenticated(), IsBusinessUser()]
+            return [IsAuthenticated(), CustomOfferPermissions()]
         if self.action == "retrieve":
             return [IsAuthenticated()]
         if self.action == "partial_update":
-            return [IsAuthenticated(), IsBusinessUser()]
+            return [IsAuthenticated(), CustomOfferPermissions()]
         if self.action == "destroy":
-            return [IsAuthenticated(), IsBusinessUser()]
+            return [IsAuthenticated(), CustomOfferPermissions()]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -83,3 +83,12 @@ class OfferModelViewSet(viewsets.ModelViewSet):
 class OfferDetailRetrieveView(generics.RetrieveAPIView):
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailSerializer
+
+
+class OrderListCreateView(generics.ListCreateAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderPostSerializer
+    permission_classes = [IsAuthenticated, CustomOrderPermissions]
+
+    def perform_create(self, serializer):
+        serializer.save(customer_user=self.request.user)
