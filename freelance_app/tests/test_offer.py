@@ -238,3 +238,115 @@ class OfferTests(APITestCase):
         url = reverse("offer-detail", kwargs={"pk": 1233212133321321321321})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_patch_offer_successful(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("offer-detail", kwargs={"pk": self.offer.pk})
+        data = {
+            "title": "Grafikdesign-Paket",
+            "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen.",
+            "details": [
+                {
+                    "title": "Basic Design",
+                    "revisions": 2,
+                    "delivery_time_in_days": 5,
+                    "price": 100,
+                    "features": [
+                        "Logo Design",
+                        "Visitenkarte"
+                    ],
+                    "offer_type": "basic"
+                }
+            ]
+        }
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_patch_offer_not_authenticated(self):
+        url = reverse("offer-detail", kwargs={"pk": self.offer.pk})
+        data = {
+            "title": "Grafikdesign-Paket",
+            "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen.",
+            "details": [
+                {
+                    "title": "Basic Design",
+                    "revisions": 2,
+                    "delivery_time_in_days": 5,
+                    "price": 100,
+                    "features": [
+                        "Logo Design",
+                        "Visitenkarte"
+                    ],
+                    "offer_type": "basic"
+                }
+            ]
+        }
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_patch_offer_not_owner_of_offer(self):
+        self.user_two = User.objects.create_user(username="testusertwo", password="testpassword123", email="testusertwo@gmx.de")
+        self.client.force_authenticate(user=self.user_two)
+        url = reverse("offer-detail", kwargs={"pk": self.offer.pk})
+        data = {
+            "title": "Grafikdesign-Paket",
+            "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen.",
+            "details": [
+                {
+                    "title": "Basic Design",
+                    "revisions": 2,
+                    "delivery_time_in_days": 5,
+                    "price": 100,
+                    "features": [
+                        "Logo Design",
+                        "Visitenkarte"
+                    ],
+                    "offer_type": "basic"
+                }
+            ]
+        }
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_patch_offer_not_found(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("offer-detail", kwargs={"pk": 321987321321987})
+        data = {
+            "title": "Grafikdesign-Paket",
+            "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen.",
+            "details": [
+                {
+                    "title": "Basic Design",
+                    "revisions": 2,
+                    "delivery_time_in_days": 5,
+                    "price": 100,
+                    "features": [
+                        "Logo Design",
+                        "Visitenkarte"
+                    ],
+                    "offer_type": "basic"
+                }
+            ]
+        }
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_patch_offer_feature_not_as_list(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("offer-detail", kwargs={"pk": self.offer.pk})
+        data = {
+            "title": "Grafikdesign-Paket",
+            "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen.",
+            "details": [
+                {
+                    "title": "Basic Design",
+                    "revisions": 2,
+                    "delivery_time_in_days": 5,
+                    "price": 100,
+                    "features": "Logo Design",
+                    "offer_type": "basic"
+                }
+            ]
+        }
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

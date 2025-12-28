@@ -100,6 +100,8 @@ class OfferPatchSerializer(serializers.ModelSerializer):
                 features = single_detail_offer.get("features", None)
                 if features and type(features) is not list:
                     raise serializers.ValidationError("features have to be in a list.")
+                if "offer_type" not in single_detail_offer:
+                    raise serializers.ValidationError("offer_type has to be entered to access the right offer detail.")
         return value
 
     def update(self, instance, validated_data):
