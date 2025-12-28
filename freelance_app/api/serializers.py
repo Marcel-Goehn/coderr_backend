@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-from django.db.models import Min
 from rest_framework import serializers
 from freelance_app.models import Offer, OfferDetail
 
@@ -70,3 +69,17 @@ class OfferGetListSerializer(serializers.ModelSerializer):
                   "user_details"]
         read_only_fields = ["id", "user", "title", "image", "description", 
                             "created_at", "updated_at"]
+        
+
+class OfferRetrieveSerializer(serializers.ModelSerializer):
+
+    details = OfferDetailHyperLinkedSerializer(many=True, read_only=True)
+    min_price = serializers.ReadOnlyField()
+    min_delivery_time = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Offer
+        fields = ["id", "user", "title", "image", "description", "created_at",
+                  "updated_at", "details", "min_price", "min_delivery_time"]
+        read_only_fields = ["id", "user", "title", "image", "description", "created_at",
+                            "updated_at"]
