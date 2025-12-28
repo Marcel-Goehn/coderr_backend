@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from auth_app.models import UserProfile
 from freelance_app.models import Offer, OfferDetail
-from freelance_app.api.serializers import OfferGetListSerializer, OfferRetrieveSerializer
+from freelance_app.api.serializers import OfferDetailSerializer
 
 
 class OfferTests(APITestCase):
@@ -373,4 +373,25 @@ class OfferTests(APITestCase):
         self.client.force_authenticate(user=self.user)
         url = reverse("offer-detail", kwargs={"pk": 329873298798})
         response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_retrieve_offerdetail_successful(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("offerdetail", kwargs={"pk": self.offer_detail_one.pk})
+        response = self.client.get(url)
+        expected_data = OfferDetailSerializer(self.offer_detail_one).data
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(expected_data, response.data)
+
+    def test_retrieve_offerdetail_not_authenticated(self):
+        url = reverse("offerdetail", kwargs={"pk": self.offer_detail_one.pk})
+        response = self.client.get(url)
+        expected_data = OfferDetailSerializer(self.offer_detail_one).data
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_offerdetail_not_found(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("offerdetail", kwargs={"pk": 1329321098})
+        response = self.client.get(url)
+        expected_data = OfferDetailSerializer(self.offer_detail_one).data
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
