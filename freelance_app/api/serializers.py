@@ -83,3 +83,39 @@ class OfferRetrieveSerializer(serializers.ModelSerializer):
                   "updated_at", "details", "min_price", "min_delivery_time"]
         read_only_fields = ["id", "user", "title", "image", "description", "created_at",
                             "updated_at"]
+        
+
+class OfferPatchSerializer(serializers.ModelSerializer):
+
+    details = OfferDetailSerializer(many=True)
+
+    class Meta:
+        model = Offer
+        fields = ["id", "title", "image", "description", "details"]
+        read_only_fields = ["id"]
+
+    def validate_details(self, value):
+        if value is not None:
+            for single_detail_offer in value:
+                features = single_detail_offer.get("features", None)
+                if features and type(features) is not list:
+                    raise serializers.ValidationError("features have to be in a list.")
+        return value
+
+    def update(self, instance, validated_data):
+        offer_details = validated_data.pop("details", None)
+        if offer_details is not None:
+            for detail in offer_details:
+                single_offer_detail = OfferDetail.objects.get(offer=instance, offer_type=detail["offer_type"])
+                single_offer_detail.title = detail.get("title", single_offer_detail.title)
+                single_offer_detail.revisions = detail.get("revisions", single_offer_detail.revisions)
+                single_offer_detail.delivery_time_in_days = detail.get("delivery_time_in_days", single_offer_detail.delivery_time_in_days)
+                single_offer_detail.price = detail.get("price", single_offer_detail.price)
+                single_offer_detail.features = detail.get("features", single_offer_detail.features)
+                single_offer_detail.save()
+
+        instance.title = validated_data.get("title", instance.title)
+        instance.image = validated_data.get("image", instance.image)
+        instance.description = validated_data.get("description", instance.description)
+        instance.save()
+        return instance

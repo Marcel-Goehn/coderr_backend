@@ -1,7 +1,8 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import (OfferPostSerializer, OfferGetListSerializer,
-                          OfferDetailHyperLinkedSerializer, OfferRetrieveSerializer)
+                          OfferDetailHyperLinkedSerializer, OfferRetrieveSerializer,
+                          OfferPatchSerializer)
 from .permissions import IsBusinessUser
 from freelance_app.models import Offer, OfferDetail
 from rest_framework import filters
@@ -42,6 +43,8 @@ class OfferModelViewSet(viewsets.ModelViewSet):
             if max_delivery_time_query_param is not None:
                 annotated_qs = annotated_qs.filter(min_delivery_time__lte=max_delivery_time_query_param)
             return annotated_qs
+        elif self.action == "partial_update":
+            return Offer.objects.all()
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -50,6 +53,8 @@ class OfferModelViewSet(viewsets.ModelViewSet):
             return OfferRetrieveSerializer
         elif self.action == "create":
             return OfferPostSerializer
+        elif self.action == "partial_update":
+            return OfferPatchSerializer
         
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -64,6 +69,8 @@ class OfferModelViewSet(viewsets.ModelViewSet):
             return [IsAuthenticated(), IsBusinessUser()]
         if self.action == "retrieve":
             return [IsAuthenticated()]
+        if self.action == "partial_update":
+            return [IsAuthenticated(), IsBusinessUser()]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
