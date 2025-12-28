@@ -9,8 +9,13 @@ class IsBusinessUser(permissions.BasePermission):
         if request.method == "POST":
             if request.user.profile.type == "business":
                 return True
+        
         if request.method == "PATCH":
             return True
+        
+        if request.method == "DELETE":
+            return True
+
         return False
 
     def has_object_permission(self, request, view, obj):
@@ -18,4 +23,7 @@ class IsBusinessUser(permissions.BasePermission):
             return True
         
         if request.method == "PATCH":
+            return request.user == obj.user
+        
+        if request.method == "DELETE":
             return request.user == obj.user

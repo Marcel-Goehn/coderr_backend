@@ -45,6 +45,8 @@ class OfferModelViewSet(viewsets.ModelViewSet):
             return annotated_qs
         elif self.action == "partial_update":
             return Offer.objects.all()
+        elif self.action == "destroy":
+            return Offer.objects.all()
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -70,6 +72,8 @@ class OfferModelViewSet(viewsets.ModelViewSet):
         if self.action == "retrieve":
             return [IsAuthenticated()]
         if self.action == "partial_update":
+            return [IsAuthenticated(), IsBusinessUser()]
+        if self.action == "destroy":
             return [IsAuthenticated(), IsBusinessUser()]
 
     def perform_create(self, serializer):
