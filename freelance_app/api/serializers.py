@@ -154,3 +154,21 @@ class OrderPostSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "customer_user": {"required": False}
         }
+
+
+class OrderListSerializer(serializers.ModelSerializer):
+
+    business_user = serializers.IntegerField(source="offer_detail.offer.user.id", read_only=True)
+    title = serializers.CharField(source="offer_detail.title", max_length=50, read_only=True)
+    revisions = serializers.IntegerField(source="offer_detail.revisions", read_only=True)
+    delivery_time_in_days = serializers.IntegerField(source="offer_detail.delivery_time_in_days", read_only=True)
+    price = serializers.FloatField(source="offer_detail.price", read_only=True)
+    features = serializers.JSONField(source="offer_detail.features", read_only=True)
+    offer_type = serializers.CharField(source="offer_detail.offer_type", read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ["id", "customer_user", "business_user", "title", "revisions",
+                   "delivery_time_in_days", "price", "features", "offer_type", 
+                   "status", "created_at", "updated_at"]
+        read_only_fields = ["id", "customer_user", "status", "created_at", "updated_at"]

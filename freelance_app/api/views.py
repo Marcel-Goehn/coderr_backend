@@ -1,8 +1,10 @@
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import (OfferPostSerializer, OfferGetListSerializer, OfferRetrieveSerializer,
-                          OfferPatchSerializer, OfferDetailSerializer, OrderPostSerializer)
+                          OfferPatchSerializer, OfferDetailSerializer, OrderPostSerializer,
+                          OrderListSerializer)
 from .permissions import CustomOfferPermissions, CustomOrderPermissions
 from freelance_app.models import Offer, OfferDetail, Order
 from rest_framework import filters
@@ -86,9 +88,17 @@ class OfferDetailRetrieveView(generics.RetrieveAPIView):
 
 
 class OrderListCreateView(generics.ListCreateAPIView):
-    queryset = Order.objects.all()
-    serializer_class = OrderPostSerializer
     permission_classes = [IsAuthenticated, CustomOrderPermissions]
+
+    def get_queryset(self):
+        if self.request.method == "GET":
+            return Order.objects.filter(Q(customer_user__id=self.request.user.id) | Q(offer_detail__offer__user__id=self.request.user.id))
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return OrderListSerializer
+        if self.request.method == "POST":
+            return OrderPostSerializer
 
     def perform_create(self, serializer):
         serializer.save(customer_user=self.request.user)

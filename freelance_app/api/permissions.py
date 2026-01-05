@@ -31,6 +31,9 @@ class CustomOfferPermissions(permissions.BasePermission):
 
 class CustomOrderPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
         if request.method == "POST":
             return request.user.profile.type == "customer"
         return False
