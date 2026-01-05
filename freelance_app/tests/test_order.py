@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 from rest_framework import status
 from auth_app.models import UserProfile
-from freelance_app.models import Offer, OfferDetail
+from freelance_app.models import Offer, OfferDetail, Order
 
 
 class OrderTests(APITestCase):
@@ -25,6 +25,7 @@ class OrderTests(APITestCase):
                                                            "Test1", "Test2"],
                                                        offer_type="basic"
                                                        )
+        self.order = Order.objects.create(customer_user=self.user, offer_detail_id=1)
 
     def test_post_order_successful(self):
         self.client.force_authenticate(user=self.user)
@@ -57,3 +58,14 @@ class OrderTests(APITestCase):
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_list_successful(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("order-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_list_not_authenticated(self):
+        url = reverse("order-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
