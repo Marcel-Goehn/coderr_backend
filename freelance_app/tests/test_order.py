@@ -1,0 +1,59 @@
+from django.urls import reverse
+from django.contrib.auth.models import User
+from rest_framework.test import APITestCase
+from rest_framework import status
+from auth_app.models import UserProfile
+from freelance_app.models import Offer, OfferDetail
+
+
+class OrderTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword123", email="testmail@mail.com")
+        self.profile = UserProfile.objects.create(
+            user=self.user, type="customer")
+        self.user_two = User.objects.create_user(
+            username="testusertwo", password="testpassword123", email="testmailtwo@mail.com")
+        self.profile_two = UserProfile.objects.create(
+            user=self.user_two, type="business")
+        self.offer = Offer.objects.create(
+            user=self.user, title="Test", description="Test")
+        self.offer_detail = OfferDetail.objects.create(offer=self.offer, title="Test",
+                                                       revisions=2,
+                                                       delivery_time_in_days=5, price=100,
+                                                       features=[
+                                                           "Test1", "Test2"],
+                                                       offer_type="basic"
+                                                       )
+
+    def test_post_order_successful(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("order-list")
+        data = {
+            "offer_detail_id": 1
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_post_missing_order_detail(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("order-list")
+        response = self.client.post(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_not_authenticated(self):
+        url = reverse("order-list")
+        data = {
+            "offer_detail_id": 1
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_post_not_customer(self):
+        self.client.force_authenticate(user=self.user_two)
+        url = reverse("order-list")
+        data = {
+            "offer_detail_id": 1
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

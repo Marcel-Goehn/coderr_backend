@@ -132,12 +132,6 @@ class OfferPatchSerializer(serializers.ModelSerializer):
 
 class OrderPostSerializer(serializers.ModelSerializer):
 
-    offer_choices = [
-        ("basic", "basic"),
-        ("standard", "standard"),
-        ("premium", "premium")
-    ]
-
     offer_detail_id = serializers.PrimaryKeyRelatedField(
         queryset=OfferDetail.objects.all(),
         write_only=True,
@@ -149,7 +143,7 @@ class OrderPostSerializer(serializers.ModelSerializer):
     delivery_time_in_days = serializers.IntegerField(source="offer_detail.delivery_time_in_days", read_only=True)
     price = serializers.FloatField(source="offer_detail.price", read_only=True)
     features = serializers.JSONField(source="offer_detail.features", read_only=True)
-    offer_type = serializers.ChoiceField(choices=offer_choices, read_only=True)
+    offer_type = serializers.CharField(source="offer_detail.offer_type", read_only=True)
 
     class Meta:
         model = Order
