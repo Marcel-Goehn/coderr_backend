@@ -124,17 +124,31 @@ class OrderUpdateDestroyView(mixins.UpdateModelMixin,
 
     def patch(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
-    
+
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
-    
 
-class OrderCountView(APIView):
+
+class OrderCountInProgressView(APIView):
     def get(self, req, pk):
         user = get_object_or_404(User, pk=pk)
         if user.profile.type != "business":
             return Response("User is not of type business.", status=status.HTTP_404_NOT_FOUND)
-        queryset_count = Order.objects.filter(offer_detail__offer__user__pk=user.pk, status="in_progress").count()
+        queryset_count = Order.objects.filter(
+            offer_detail__offer__user__pk=user.pk, status="in_progress").count()
+        data = {
+            "order_count": queryset_count
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class OrderCountCompleted(APIView):
+    def get(self, req, pk):
+        user = get_object_or_404(User, pk=pk)
+        if user.profile.type != "business":
+            return Response("User is not of type business.", status=status.HTTP_404_NOT_FOUND)
+        queryset_count = Order.objects.filter(
+            offer_detail__offer__user__pk=user.pk, status="completed").count()
         data = {
             "order_count": queryset_count
         }
