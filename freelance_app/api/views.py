@@ -1,5 +1,6 @@
 from django.db.models import Q
-from rest_framework import viewsets
+from rest_framework.views import APIView
+from rest_framework import viewsets, status
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import (OfferPostSerializer, OfferGetListSerializer, OfferRetrieveSerializer,
@@ -11,6 +12,9 @@ from rest_framework import filters
 from .paginations import OfferListPagination
 from django.db.models import Min
 from rest_framework import mixins
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
+from rest_framework.response import Response
 
 
 class OfferModelViewSet(viewsets.ModelViewSet):
@@ -123,3 +127,15 @@ class OrderUpdateDestroyView(mixins.UpdateModelMixin,
     
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+    
+
+class OrderCountView(APIView):
+    def get(self, req, pk):
+        user = get_object_or_404(User, pk=pk)
+        if user.profile.type != "business":
+            return Response("User is not of type business.", status=status.HTTP_404_NOT_FOUND)
+        queryset_count = Order.objects.filter(offer_detail__offer__user__pk=user.pk, status="in_progress").count()
+        data = {
+            "order_count": queryset_count
+        }
+        return Response(data, status=status.HTTP_200_OK)
