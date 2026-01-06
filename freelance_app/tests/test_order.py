@@ -69,3 +69,47 @@ class OrderTests(APITestCase):
         url = reverse("order-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_patch_order_successful(self):
+        self.client.force_authenticate(user=self.user_two)
+        url = reverse("order-detail", kwargs={"pk": self.order.pk})
+        data = {
+            "status": "completed"
+        }
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_patch_order_wrong_status(self):
+        self.client.force_authenticate(user=self.user_two)
+        url = reverse("order-detail", kwargs={"pk": self.order.pk})
+        data = {
+            "status": "almost_completed"
+        }
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_order_not_authenticated(self):
+        url = reverse("order-detail", kwargs={"pk": self.order.pk})
+        data = {
+            "status": "completed"
+        }
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_patch_order_not_business_user(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("order-detail", kwargs={"pk": self.order.pk})
+        data = {
+            "status": "completed"
+        }
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_patch_order_not_found(self):
+        self.client.force_authenticate(user=self.user_two)
+        url = reverse("order-detail", kwargs={"pk": 210210210210})
+        data = {
+            "status": "completed"
+        }
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
