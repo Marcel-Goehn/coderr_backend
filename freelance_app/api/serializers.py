@@ -156,7 +156,7 @@ class OrderPostSerializer(serializers.ModelSerializer):
         }
 
 
-class OrderListSerializer(serializers.ModelSerializer):
+class OrderListUpdateSerializer(serializers.ModelSerializer):
 
     business_user = serializers.IntegerField(source="offer_detail.offer.user.id", read_only=True)
     title = serializers.CharField(source="offer_detail.title", max_length=50, read_only=True)
@@ -171,4 +171,4 @@ class OrderListSerializer(serializers.ModelSerializer):
         fields = ["id", "customer_user", "business_user", "title", "revisions",
                    "delivery_time_in_days", "price", "features", "offer_type", 
                    "status", "created_at", "updated_at"]
-        read_only_fields = ["id", "customer_user", "status", "created_at", "updated_at"]
+        read_only_fields = ["id", "customer_user", "created_at", "updated_at"]

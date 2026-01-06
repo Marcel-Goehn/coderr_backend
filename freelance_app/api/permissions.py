@@ -36,4 +36,8 @@ class CustomOrderPermissions(permissions.BasePermission):
 
         if request.method == "POST":
             return request.user.profile.type == "customer"
+        
+        if request.method == "PATCH":
+            return request.user.profile.type == "business"
+
         return False
