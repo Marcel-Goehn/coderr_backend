@@ -39,5 +39,8 @@ class CustomOrderPermissions(permissions.BasePermission):
         
         if request.method == "PATCH":
             return request.user.profile.type == "business"
+        
+        if request.method == "DELETE":
+            return request.user.is_staff
 
         return False
