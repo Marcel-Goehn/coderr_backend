@@ -25,7 +25,8 @@ class OrderTests(APITestCase):
                                                            "Test1", "Test2"],
                                                        offer_type="basic"
                                                        )
-        self.order = Order.objects.create(customer_user=self.user, offer_detail_id=1)
+        self.order = Order.objects.create(
+            customer_user=self.user, offer_detail_id=1)
 
     def test_post_order_successful(self):
         self.client.force_authenticate(user=self.user)
@@ -135,4 +136,21 @@ class OrderTests(APITestCase):
         self.client.force_authenticate(user=self.user_two)
         url = reverse("order-detail", kwargs={"pk": 3098321098})
         response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_order_count_successful(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("order-count", kwargs={"pk": self.user_two.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_order_count_not_authenticated(self):
+        url = reverse("order-count", kwargs={"pk": self.user_two.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_order_count_not_business_user(self):
+        self.client.force_authenticate(user=self.user_two)
+        url = reverse("order-count", kwargs={"pk": self.user.pk})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
