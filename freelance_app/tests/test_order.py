@@ -13,7 +13,7 @@ class OrderTests(APITestCase):
         self.profile = UserProfile.objects.create(
             user=self.user, type="customer")
         self.user_two = User.objects.create_user(
-            username="testusertwo", password="testpassword123", email="testmailtwo@mail.com")
+            username="testusertwo", password="testpassword123", email="testmailtwo@mail.com", is_staff=True)
         self.profile_two = UserProfile.objects.create(
             user=self.user_two, type="business")
         self.offer = Offer.objects.create(
@@ -112,4 +112,27 @@ class OrderTests(APITestCase):
             "status": "completed"
         }
         response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_order_successful(self):
+        self.client.force_authenticate(user=self.user_two)
+        url = reverse("order-detail", kwargs={"pk": self.order.pk})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_order_not_authenticated(self):
+        url = reverse("order-detail", kwargs={"pk": self.order.pk})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_order_user_not_staff(self):
+        self.client.force_authenticate(user=self.user)
+        url = reverse("order-detail", kwargs={"pk": self.order.pk})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_order_not_found(self):
+        self.client.force_authenticate(user=self.user_two)
+        url = reverse("order-detail", kwargs={"pk": 3098321098})
+        response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
