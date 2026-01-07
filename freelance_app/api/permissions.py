@@ -44,3 +44,10 @@ class CustomOrderPermissions(permissions.BasePermission):
             return request.user.is_staff
 
         return False
+
+
+class CustomReviewPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == "POST":
+            return request.user.profile.type == "customer"
+        return False

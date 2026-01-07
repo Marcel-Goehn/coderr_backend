@@ -5,9 +5,9 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import (OfferPostSerializer, OfferGetListSerializer, OfferRetrieveSerializer,
                           OfferPatchSerializer, OfferDetailSerializer, OrderPostSerializer,
-                          OrderListUpdateSerializer)
-from .permissions import CustomOfferPermissions, CustomOrderPermissions
-from freelance_app.models import Offer, OfferDetail, Order
+                          OrderListUpdateSerializer, ReviewListCreateSerializer)
+from .permissions import CustomOfferPermissions, CustomOrderPermissions, CustomReviewPermission
+from freelance_app.models import Offer, OfferDetail, Order, Review
 from rest_framework import filters
 from .paginations import OfferListPagination
 from django.db.models import Min
@@ -153,3 +153,12 @@ class OrderCountCompleted(APIView):
             "order_count": queryset_count
         }
         return Response(data, status=status.HTTP_200_OK)
+    
+
+class ReviewListCreateView(generics.ListCreateAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewListCreateSerializer
+    permission_classes = [IsAuthenticated, CustomReviewPermission]
+
+    def perform_create(self, serializer):
+        serializer.save(reviewer=self.request.user)

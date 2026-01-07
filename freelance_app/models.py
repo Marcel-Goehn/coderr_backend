@@ -52,3 +52,12 @@ class Order(models.Model):
 
     def __str__(self):
         return f"{self.customer_user}"
+
+
+class Review(models.Model):
+    business_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="review_business_user")
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="review_reviewer")
+    rating = models.IntegerField()
+    description = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

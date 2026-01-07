@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from freelance_app.models import Offer, OfferDetail, Order
+from freelance_app.models import Offer, OfferDetail, Order, Review
+from django.shortcuts import get_object_or_404
 
 
 class OfferDetailSerializer(serializers.ModelSerializer):
@@ -172,3 +173,21 @@ class OrderListUpdateSerializer(serializers.ModelSerializer):
                    "delivery_time_in_days", "price", "features", "offer_type", 
                    "status", "created_at", "updated_at"]
         read_only_fields = ["id", "customer_user", "created_at", "updated_at"]
+
+
+class ReviewListCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ["id", "business_user", "reviewer", "rating", "description", "created_at", "updated_at"]
+        read_only_fields = ["id", "reviewer", "created_at", "updated_at"]
+
+    def validate_business_user(self, value):
+        if value.profile.type == "customer":
+            raise serializers.ValidationError("You can't give a review to a customer.")
+        return value
+
+    def validate(self, data):
+        all_reviews_for_business_user = Review.objects.filter(business_user=data["business_user"])
+        if all_reviews_for_business_user.filter(reviewer=self.context["request"].user).exists():
+            raise serializers.ValidationError({"reviewer": "You already gave this seller a review."})
+        return data
