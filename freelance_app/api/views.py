@@ -153,12 +153,32 @@ class OrderCountCompleted(APIView):
             "order_count": queryset_count
         }
         return Response(data, status=status.HTTP_200_OK)
-    
+
 
 class ReviewListCreateView(generics.ListCreateAPIView):
-    queryset = Review.objects.all()
     serializer_class = ReviewListCreateSerializer
-    permission_classes = [IsAuthenticated, CustomReviewPermission]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['updated_at', 'rating']
+
+    def get_queryset(self):
+        if self.request.method == "POST":
+            return Review.objects.all()
+        elif self.request.method == "GET":
+            qs = Review.objects.all()
+            business_user_id = self.request.query_params.get(
+                "business_user_id", None)
+            reviewer_id = self.request.query_params.get("reviewer_id", None)
+            if business_user_id is not None:
+                qs = qs.filter(business_user__id=business_user_id)
+            if reviewer_id is not None:
+                qs = qs.filter(reviewer__id=reviewer_id)
+            return qs
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [IsAuthenticated()]
+        elif self.request.method == "POST":
+            return [IsAuthenticated(), CustomReviewPermission()]
 
     def perform_create(self, serializer):
         serializer.save(reviewer=self.request.user)
