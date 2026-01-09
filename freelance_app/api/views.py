@@ -5,7 +5,8 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import (OfferPostSerializer, OfferGetListSerializer, OfferRetrieveSerializer,
                           OfferPatchSerializer, OfferDetailSerializer, OrderPostSerializer,
-                          OrderListUpdateSerializer, ReviewListCreateSerializer)
+                          OrderListUpdateSerializer, ReviewListCreateSerializer,
+                          ReviewPatchSerializer)
 from .permissions import CustomOfferPermissions, CustomOrderPermissions, CustomReviewPermission
 from freelance_app.models import Offer, OfferDetail, Order, Review
 from rest_framework import filters
@@ -182,3 +183,16 @@ class ReviewListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(reviewer=self.request.user)
+
+
+class ReviewPatchDeleteView(mixins.UpdateModelMixin, mixins.DestroyModelMixin, 
+                            generics.GenericAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewPatchSerializer
+    permission_classes = [IsAuthenticated, CustomReviewPermission]
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+    
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)

@@ -191,3 +191,10 @@ class ReviewListCreateSerializer(serializers.ModelSerializer):
         if all_reviews_for_business_user.filter(reviewer=self.context["request"].user).exists():
             raise serializers.ValidationError({"reviewer": "You already gave this seller a review."})
         return data
+    
+
+class ReviewPatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ["id", "business_user", "reviewer", "rating", "description", "created_at", "updated_at"]
+        read_only_fields = ["id", "business_user", "reviewer", "created_at", "updated_at"]
