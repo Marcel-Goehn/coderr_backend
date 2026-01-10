@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
+
 from rest_framework import serializers
+
 from freelance_app.models import Offer, OfferDetail, Order, Review
-from django.shortcuts import get_object_or_404
 
 
 class OfferDetailSerializer(serializers.ModelSerializer):

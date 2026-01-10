@@ -1,21 +1,20 @@
-from django.db.models import Q
+from django.db.models import Q, Min, Avg
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
+
 from rest_framework.views import APIView
-from rest_framework import viewsets, status
-from rest_framework import generics
+from rest_framework import viewsets, status, generics, mixins, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+
 from .serializers import (OfferPostSerializer, OfferGetListSerializer, OfferRetrieveSerializer,
                           OfferPatchSerializer, OfferDetailSerializer, OrderPostSerializer,
                           OrderListUpdateSerializer, ReviewListCreateSerializer,
                           ReviewPatchSerializer)
 from .permissions import CustomOfferPermissions, CustomOrderPermissions, CustomReviewPermission
 from freelance_app.models import Offer, OfferDetail, Order, Review
-from rest_framework import filters
+from auth_app.models import UserProfile
 from .paginations import OfferListPagination
-from django.db.models import Min
-from rest_framework import mixins
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.models import User
-from rest_framework.response import Response
 
 
 class OfferModelViewSet(viewsets.ModelViewSet):
@@ -196,3 +195,23 @@ class ReviewPatchDeleteView(mixins.UpdateModelMixin, mixins.DestroyModelMixin,
     
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+    
+
+class BaseInformationView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, req):
+        reviews = Review.objects.all()
+        business_profiles = UserProfile.objects.filter(type="business")
+        offers = Offer.objects.all()
+        average_rating_dict = reviews.aggregate(Avg("rating"))
+        average_rating = average_rating_dict.get("rating__avg")
+        if average_rating == None:
+            average_rating = 0.0
+        data = {
+            "review_count": reviews.count(),
+            "average_rating": float((f"{average_rating:.1f}")),
+            "business_profile": business_profiles.count(),
+            "offer_count": offers.count()
+        }
+        return Response(data)

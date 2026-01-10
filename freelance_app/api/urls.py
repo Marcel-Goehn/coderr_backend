@@ -1,9 +1,12 @@
 from django.urls import path, include
+
 from rest_framework.routers import DefaultRouter
+
 from .views import (OfferModelViewSet, OfferDetailRetrieveView, 
                     OrderListCreateView, OrderUpdateDestroyView,
                     OrderCountInProgressView, OrderCountCompleted,
-                    ReviewListCreateView, ReviewPatchDeleteView)
+                    ReviewListCreateView, ReviewPatchDeleteView, 
+                    BaseInformationView)
 
 router = DefaultRouter()
 router.register(r"offers", OfferModelViewSet, basename="offer")
@@ -16,5 +19,6 @@ urlpatterns = [
     path("order-count/<int:pk>/", OrderCountInProgressView.as_view(), name="order-count"),
     path("completed-order-count/<int:pk>/", OrderCountCompleted.as_view(), name="order-count-completed"),
     path("reviews/", ReviewListCreateView.as_view(), name="review-list"),
-    path("reviews/<int:pk>/", ReviewPatchDeleteView.as_view(), name="review-detail")
+    path("reviews/<int:pk>/", ReviewPatchDeleteView.as_view(), name="review-detail"),
+    path("base-info/", BaseInformationView.as_view(), name="base-info")
 ]

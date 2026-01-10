@@ -1,7 +1,9 @@
 from django.urls import reverse
 from django.contrib.auth.models import User
+
 from rest_framework.test import APITestCase
 from rest_framework import status
+
 from auth_app.models import UserProfile
 from freelance_app.models import Offer, OfferDetail
 from freelance_app.api.serializers import OfferDetailSerializer
