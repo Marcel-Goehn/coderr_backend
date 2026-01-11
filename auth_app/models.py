@@ -16,7 +16,7 @@ class UserProfile(models.Model):
     location = models.CharField(max_length=20, blank=True)
     tel = models.CharField(max_length=20, blank=True)
     description = models.CharField(max_length=100, blank=True)
-    working_hours = models.CharField(max_length=10, blank=True)
+    working_hours = models.CharField(max_length=1000, blank=True)
     type = models.CharField(max_length=10, choices=user_choices)
 
     def __str__(self):
