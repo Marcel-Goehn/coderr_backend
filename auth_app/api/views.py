@@ -10,6 +10,10 @@ from .permissions import IsProfileOwner
 
 
 class RegistrationView(APIView):
+    """
+    Registers a user and creates a token for authenticating.
+    """
+    
     permission_classes = [AllowAny]
     
     def post(self, req):

@@ -21,11 +21,17 @@ class RegistrationSerializer(serializers.ModelSerializer):
         }
         
     def validate_type(self, value):
+        """
+        Validates the value of "type". It has to be either "customer" or "business".
+        """
         if value != "business" and value != "customer":
             raise serializers.ValidationError("type field can only be 'business' or 'customer'.")
         return value
             
     def validate_email(self, value):
+        """
+        Checks if the email is already in use. Email has to be unique.
+        """
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Email already in use.")
         return value
@@ -44,6 +50,12 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
         
     def validate(self, data):
+        """
+        Checks if a user with the username exists. 
+        If it exists, then it compares the password of the request with the hashed password,
+        that is stored in the database. If they are equal, the user data is send back to the view,
+        to get access to the token.
+        """
         user = authenticate(username=data["username"], password=data["password"])
         if not user:
             raise serializers.ValidationError("Username or password is incorrect.")
@@ -65,11 +77,17 @@ class ProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ["user", "type"]
         
     def validate_email(self, value):
+        """
+        Checks if the email is already in use. Email has to be unique.
+        """
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Email already in use.")
         return value
         
     def update(self, instance, validated_data):
+        """
+        Updates two database tables at once. The UserProfile table and the User table.
+        """
         user_data = validated_data.pop("user", {})
         user = instance.user
         user.first_name = user_data.get("first_name", user.first_name)
@@ -78,7 +96,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         instance.location = validated_data.get("location", instance.location)
         instance.tel = validated_data.get("tel", instance.tel)
         instance.description = validated_data.get("description", instance.description)
-        instance.working_hours = validated_data.get("workin_hours", instance.working_hours)
+        instance.working_hours = validated_data.get("working_hours", instance.working_hours)
         user.email = user_data.get("email", user.email)
         user.save()
         instance.save()

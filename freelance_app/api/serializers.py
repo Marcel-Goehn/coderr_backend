@@ -14,6 +14,10 @@ class OfferDetailSerializer(serializers.ModelSerializer):
 
 
 class OfferPostSerializer(serializers.ModelSerializer):
+    """
+    Serializer for a POST request to add offers.
+    The details are repesentated as a nested serializer in the response.
+    """
 
     details = OfferDetailSerializer(many=True)
 
@@ -23,11 +27,19 @@ class OfferPostSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
     def validate_details(self, value):
+        """
+        An offer always has to have 3 offer details.
+        """
         if len(value) != 3:
             raise serializers.ValidationError("A offer must contain three offer details.")
         return value
 
     def create(self, validated_data):
+        """
+        Adds 2 instances for the database at once.
+        First it creates the offer. 
+        After that, it creates for each detail of that offer a database instance.
+        """
         offer = Offer.objects.create(title=validated_data["title"], 
                                      description=validated_data["description"], 
                                      user=validated_data["user"])
@@ -51,7 +63,12 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 
 class OfferDetailHyperLinkedSerializer(serializers.HyperlinkedModelSerializer):
-
+    """
+    Represents the offer details as hyperlinks.
+    This serializer is a nested serializer in the OfferGetListSerializer & 
+    OfferRetrieveSerializer.
+    """
+    
     class Meta:
         model = OfferDetail
         fields = ["id", "url"]
@@ -65,6 +82,9 @@ class OfferDetailHyperLinkedSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class OfferGetListSerializer(serializers.ModelSerializer):
+    """
+    Serializes a list of offers. Shows their corresponding details as hyperlinks.
+    """
 
     details = OfferDetailHyperLinkedSerializer(many=True, read_only=True)
     min_price = serializers.ReadOnlyField()
@@ -81,6 +101,9 @@ class OfferGetListSerializer(serializers.ModelSerializer):
         
 
 class OfferRetrieveSerializer(serializers.ModelSerializer):
+    """
+    Serializes a specific offer and shows his corresponding details as hyperlinks.
+    """
 
     details = OfferDetailHyperLinkedSerializer(many=True, read_only=True)
     min_price = serializers.ReadOnlyField()
@@ -104,6 +127,11 @@ class OfferPatchSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
     def validate_details(self, value):
+        """
+        It checks if the request body contains update value for the details. 
+        If it does, it first validates the type. This has to be a list.
+        Second, if the offer_type is missing, it will raise a validation error too.
+        """
         if value is not None:
             for single_detail_offer in value:
                 features = single_detail_offer.get("features", None)
@@ -114,6 +142,10 @@ class OfferPatchSerializer(serializers.ModelSerializer):
         return value
 
     def update(self, instance, validated_data):
+        """
+        It updates two seperate database instances at once.
+        These would be the OfferDetail and the Offer itself.
+        """
         offer_details = validated_data.pop("details", None)
         if offer_details is not None:
             for detail in offer_details:
@@ -188,6 +220,10 @@ class ReviewListCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
+        """
+        It validates, if the customer user that is trying to give a review, has already given a review
+        for that specific business user. If that is the case, a validation error will be raised.
+        """
         all_reviews_for_business_user = Review.objects.filter(business_user=data["business_user"])
         if all_reviews_for_business_user.filter(reviewer=self.context["request"].user).exists():
             raise serializers.ValidationError({"reviewer": "You already gave this seller a review."})

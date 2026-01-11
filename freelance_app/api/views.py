@@ -18,12 +18,22 @@ from .paginations import OfferListPagination
 
 
 class OfferModelViewSet(viewsets.ModelViewSet):
+    """
+    This view offers the ability to use pagination, the search filter and the ordering filter.
+    The information about the pagination can be found in paginations.py
+    """
+
     pagination_class = OfferListPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["title", "description"]
     ordering_fields = ["updated_at", "min_price"]
 
     def get_queryset(self):
+        """
+        If the action is "list", you have the ability to use the query parameters.
+        It will check if they are present in the query params, and if they are it will 
+        filter with their help.
+        """
         if self.action == "create":
             return Offer.objects.all()
         elif self.action == "retrieve":
@@ -71,6 +81,11 @@ class OfferModelViewSet(viewsets.ModelViewSet):
             return OfferPatchSerializer
 
     def get_serializer_context(self):
+        """
+        It has to return None. The idea behind it is, 
+        that in the response there will be a relative path to the offer details,
+        instead of an absolute one.
+        """
         context = super().get_serializer_context()
         if self.action == "list":
             context["request"] = None
@@ -102,7 +117,8 @@ class OrderListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         if self.request.method == "GET":
-            return Order.objects.filter(Q(customer_user__id=self.request.user.id) | Q(offer_detail__offer__user__id=self.request.user.id))
+            return Order.objects.filter(Q(customer_user__id=self.request.user.id) | 
+                                        Q(offer_detail__offer__user__id=self.request.user.id))
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -130,6 +146,10 @@ class OrderUpdateDestroyView(mixins.UpdateModelMixin,
 
 
 class OrderCountInProgressView(APIView):
+    """
+    Returns an overall count of all orders that belong to a specific business user and
+    have the status of in_progress.
+    """
     def get(self, req, pk):
         user = get_object_or_404(User, pk=pk)
         if user.profile.type != "business":
@@ -143,6 +163,10 @@ class OrderCountInProgressView(APIView):
 
 
 class OrderCountCompleted(APIView):
+    """
+    Returns an overall count of all orders that belong to a specific business user and
+    have the status of completed.
+    """
     def get(self, req, pk):
         user = get_object_or_404(User, pk=pk)
         if user.profile.type != "business":
@@ -156,11 +180,19 @@ class OrderCountCompleted(APIView):
 
 
 class ReviewListCreateView(generics.ListCreateAPIView):
+    """
+    This view offers the ability to use ordering and filtering via query parameters
+    """
+
     serializer_class = ReviewListCreateSerializer
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['updated_at', 'rating']
 
     def get_queryset(self):
+        """
+        If the request is a GET method, the queryset will be filtered with the help of 
+        query parameters, if they are present.
+        """
         if self.request.method == "POST":
             return Review.objects.all()
         elif self.request.method == "GET":
@@ -201,6 +233,9 @@ class BaseInformationView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, req):
+        """
+        Returns an overall base information about the platform.
+        """
         reviews = Review.objects.all()
         business_profiles = UserProfile.objects.filter(type="business")
         offers = Offer.objects.all()
