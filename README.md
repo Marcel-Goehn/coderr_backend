@@ -18,7 +18,6 @@ It provides a RESTful API for managing offers, offer details, orders and user re
 ## Features
 
 - User authentication and profile adjustment
-- Board-based permission system (owner and members)
 - Business users can create offers and 3 different offer types per offer
 - Customer users can create orders based on the offers
 - Customers have the ability to give reviews about business users
