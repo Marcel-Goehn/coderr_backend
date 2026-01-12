@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework import viewsets, status, generics, mixins, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 
 from .serializers import (OfferPostSerializer, OfferGetListSerializer, OfferRetrieveSerializer,
                           OfferPatchSerializer, OfferDetailSerializer, OrderPostSerializer,
@@ -54,6 +55,12 @@ class OfferModelViewSet(viewsets.ModelViewSet):
                 "creator_id")
             max_delivery_time_query_param = self.request.query_params.get(
                 "max_delivery_time")
+
+            if max_delivery_time_query_param is not None:
+                try:
+                    max_delivery_time_query_param = int(max_delivery_time_query_param)
+                except ValueError:
+                    raise ValidationError({"max_delivery_time": "Has to be an integer."})
 
             if min_price_query_param is not None:
                 annotated_qs = annotated_qs.filter(
@@ -117,7 +124,7 @@ class OrderListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         if self.request.method == "GET":
-            return Order.objects.filter(Q(customer_user__id=self.request.user.id) | 
+            return Order.objects.filter(Q(customer_user__id=self.request.user.id) |
                                         Q(offer_detail__offer__user__id=self.request.user.id))
 
     def get_serializer_class(self):
@@ -150,6 +157,7 @@ class OrderCountInProgressView(APIView):
     Returns an overall count of all orders that belong to a specific business user and
     have the status of in_progress.
     """
+
     def get(self, req, pk):
         user = get_object_or_404(User, pk=pk)
         if user.profile.type != "business":
@@ -167,6 +175,7 @@ class OrderCountCompleted(APIView):
     Returns an overall count of all orders that belong to a specific business user and
     have the status of completed.
     """
+
     def get(self, req, pk):
         user = get_object_or_404(User, pk=pk)
         if user.profile.type != "business":
@@ -174,7 +183,7 @@ class OrderCountCompleted(APIView):
         queryset_count = Order.objects.filter(
             offer_detail__offer__user__pk=user.pk, status="completed").count()
         data = {
-            "order_count": queryset_count
+            "completed_order_count": queryset_count
         }
         return Response(data, status=status.HTTP_200_OK)
 
@@ -216,7 +225,7 @@ class ReviewListCreateView(generics.ListCreateAPIView):
         serializer.save(reviewer=self.request.user)
 
 
-class ReviewPatchDeleteView(mixins.UpdateModelMixin, mixins.DestroyModelMixin, 
+class ReviewPatchDeleteView(mixins.UpdateModelMixin, mixins.DestroyModelMixin,
                             generics.GenericAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewPatchSerializer
@@ -224,10 +233,10 @@ class ReviewPatchDeleteView(mixins.UpdateModelMixin, mixins.DestroyModelMixin,
 
     def patch(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
-    
+
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
-    
+
 
 class BaseInformationView(APIView):
     permission_classes = [AllowAny]
@@ -246,7 +255,7 @@ class BaseInformationView(APIView):
         data = {
             "review_count": reviews.count(),
             "average_rating": float((f"{average_rating:.1f}")),
-            "business_profile": business_profiles.count(),
+            "business_profile_count": business_profiles.count(),
             "offer_count": offers.count()
         }
         return Response(data)

@@ -44,6 +44,11 @@ Install all dependencies:
 pip install -r requirements.txt
 ```
 
+Create migration plan:
+```bash
+python manage.py makemigrations
+```
+
 Migrate the database:
 ```bash
 python manage.py migrate
