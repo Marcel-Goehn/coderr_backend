@@ -32,7 +32,7 @@ class OfferModelViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """
         If the action is "list", you have the ability to use the query parameters.
-        It will check if they are present in the query params, and if they are it will 
+        It will check if they are present in the query params, and if they are it will
         filter with their help.
         """
         if self.action == "create":
@@ -58,9 +58,11 @@ class OfferModelViewSet(viewsets.ModelViewSet):
 
             if max_delivery_time_query_param is not None:
                 try:
-                    max_delivery_time_query_param = int(max_delivery_time_query_param)
+                    max_delivery_time_query_param = int(
+                        max_delivery_time_query_param)
                 except ValueError:
-                    raise ValidationError({"max_delivery_time": "Has to be an integer."})
+                    raise ValidationError(
+                        {"max_delivery_time": "Has to be an integer."})
 
             if min_price_query_param is not None:
                 annotated_qs = annotated_qs.filter(

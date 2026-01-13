@@ -51,9 +51,11 @@ class LoginView(APIView):
     
     
 class ProfileRetrievePatchView(generics.RetrieveUpdateAPIView):
-    queryset = UserProfile.objects.all()
     serializer_class = ProfileSerializer
     permission_classes = [IsProfileOwner]
+
+    def get_queryset(self):
+        return UserProfile.objects.filter(user__id=self.kwargs["pk"])
     
     
 class ProfileListView(generics.ListAPIView):
