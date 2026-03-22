@@ -29,7 +29,9 @@ SECRET_KEY = 'django-insecure-1rpod!98!86zb4j1!&&u)7e92+@_m^l@0)=y0ff8)0=vk=(l$@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'coderr-backend.marcelgoehn.de'
+]
 
 
 # Application definition
