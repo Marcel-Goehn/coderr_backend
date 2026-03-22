@@ -31,7 +31,16 @@ DEBUG = False
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    'coderr-backend.marcelgoehn.de'
+    'coderr-backend.marcelgoehn.de',
+    'coderr.marcelgoehn.de',
+    'www.coderr.marcelgoehn.de'
+]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://coderr.marcelgoehn.de',
+    'https://www.coderr.marcelgoehn.de'
 ]
 
 
@@ -47,11 +56,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
+    'corsheaders',
     'auth_app',
     'freelance_app'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
