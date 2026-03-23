@@ -64,6 +64,10 @@ CORS_ALLOW_METHODS = [
     'PUT',
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://coderr-backend.marcelgoehn.de',
+]
+
 
 # Application definition
 
