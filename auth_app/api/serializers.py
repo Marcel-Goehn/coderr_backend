@@ -79,11 +79,13 @@ class ProfileSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         """
         Checks if the email is already in use. Email has to be unique.
+        Excludes the current user so a PATCH with their own email doesn't fail.
         """
-        if User.objects.filter(email=value).exists():
+        user = self.context['request'].user
+        if User.objects.filter(email=value).exclude(pk=user.pk).exists():
             raise serializers.ValidationError("Email already in use.")
         return value
-        
+
     def update(self, instance, validated_data):
         """
         Updates two database tables at once. The UserProfile table and the User table.
