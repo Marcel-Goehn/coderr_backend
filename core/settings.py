@@ -43,6 +43,18 @@ CORS_ALLOWED_ORIGINS = [
     'https://www.coderr.marcelgoehn.de'
 ]
 
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
 
 # Application definition
 
