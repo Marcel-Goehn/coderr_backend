@@ -56,7 +56,7 @@ class OfferModelViewSet(viewsets.ModelViewSet):
             max_delivery_time_query_param = self.request.query_params.get(
                 "max_delivery_time")
 
-            if max_delivery_time_query_param is not None:
+            if max_delivery_time_query_param:
                 try:
                     max_delivery_time_query_param = int(
                         max_delivery_time_query_param)
@@ -64,13 +64,13 @@ class OfferModelViewSet(viewsets.ModelViewSet):
                     raise ValidationError(
                         {"max_delivery_time": "Has to be an integer."})
 
-            if min_price_query_param is not None:
+            if min_price_query_param:
                 annotated_qs = annotated_qs.filter(
                     min_price__gte=min_price_query_param)
-            if creator_id_query_param is not None:
+            if creator_id_query_param:
                 annotated_qs = annotated_qs.filter(
                     user__pk=creator_id_query_param)
-            if max_delivery_time_query_param is not None:
+            if max_delivery_time_query_param:
                 annotated_qs = annotated_qs.filter(
                     min_delivery_time__lte=max_delivery_time_query_param)
             return annotated_qs
